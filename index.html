@@ -175,7 +175,7 @@
     <div class="grid">
         <div class="form-group full-width">
             <label for="incidentTitle">Incident Title / Tail No.</label>
-            <input type="text" id="incidentTitle" placeholder="e.g., Engine Fuel Control Malfunction - Tail 804">
+            <input type="text" id="incidentTitle" placeholder="Input FAIR title and Tail Number ">
         </div>
 
         <div class="form-group">
@@ -185,7 +185,7 @@
 
         <div class="form-group">
             <label for="subsystem">Implicated System / Subsystem</label>
-            <input type="text" id="subsystem" placeholder="e.g., Main Fuel Control Unit (FCU)">
+            <input type="text" id="subsystem" placeholder="State System and Subsystem">
         </div>
 
         <div class="form-group">
@@ -207,16 +207,17 @@
 
         <div class="form-group full-width" id="fleetDetailsGroup" style="display:none;">
             <label for="fleetDetails">Specific Tail / Variant Details</label>
-            <input type="text" id="fleetDetails" placeholder="e.g., Tails 801-810 only / Block 50 Variant">
+            <input type="text" id="fleetDetails" placeholder="Ensure OPSEC in updates">
         </div>
 
         <div class="form-group full-width">
             <label for="opsStatus">Operational Posture</label>
             <select id="opsStatus">
+                <option value="Normal Operations (No Hold)">Normal Operations (No Hold)</option>
                 <option value="Hold Operations">Hold Operations</option>
                 <option value="Hold Training">Hold Training</option>
                 <option value="Safety Time Out">Safety Time Out</option>
-                <option value="Normal Operations (No Hold)">Normal Operations (No Hold)</option>
+              
             </select>
         </div>
 

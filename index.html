@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>30-Min Flash Update Generator (Dark Mode)</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #151c2c;
+            --input-bg: #1e293b;
+            --border: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --output-bg: #030712;
+            --success: #10b981;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+            font-size: 1.25rem;
+            letter-spacing: 0.5px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.75rem;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+
+        input, select, textarea {
+            padding: 10px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+        }
+
+        .output-box {
+            margin-top: 10px;
+            background: var(--output-bg);
+            color: #38bdf8;
+            padding: 16px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-family: "Courier New", Courier, monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 0.9rem;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .btn-container {
+            margin-top: 16px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background-color: #334155;
+            color: var(--text-main);
+        }
+
+        .btn-secondary:hover {
+            background-color: #475569;
+        }
+
+        .toast {
+            visibility: hidden;
+            min-width: 200px;
+            background-color: var(--success);
+            color: white;
+            text-align: center;
+            border-radius: 4px;
+            padding: 10px;
+            position: fixed;
+            z-index: 1;
+            bottom: 30px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .toast.show {
+            visibility: visible;
+            animation: fadein 0.3s, fadeout 0.5s 2.5s;
+        }
+
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>30-MIN FLASH UPDATE GENERATOR</h2>
+    
+    <div class="grid">
+        <div class="form-group full-width">
+            <label for="incidentTitle">Incident Title / Tail No.</label>
+            <input type="text" id="incidentTitle" placeholder="e.g., Engine Fuel Control Malfunction - Tail 804">
+        </div>
+
+        <div class="form-group">
+            <label for="timeConcluded">Discussion Concluded (HHMM)</label>
+            <input type="text" id="timeConcluded" placeholder="e.g., 1430">
+        </div>
+
+        <div class="form-group">
+            <label for="subsystem">Implicated System / Subsystem</label>
+            <input type="text" id="subsystem" placeholder="e.g., Main Fuel Control Unit (FCU)">
+        </div>
+
+        <div class="form-group">
+            <label for="safetyImp">Safety Implication</label>
+            <select id="safetyImp">
+                <option value="NO">NO</option>
+                <option value="YES">YES</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="fleetImp">Fleet Implication</label>
+            <select id="fleetImp" onchange="toggleFleetInput()">
+                <option value="NO">NO</option>
+                <option value="YES (All Aircraft)">YES (All Aircraft)</option>
+                <option value="YES (Specific Tail/Variant)">YES (Specific Tail/Variant)</option>
+            </select>
+        </div>
+
+        <div class="form-group full-width" id="fleetDetailsGroup" style="display:none;">
+            <label for="fleetDetails">Specific Tail / Variant Details</label>
+            <input type="text" id="fleetDetails" placeholder="e.g., Tails 801-810 only / Block 50 Variant">
+        </div>
+
+        <div class="form-group full-width">
+            <label for="opsStatus">Operational Posture</label>
+            <select id="opsStatus">
+                <option value="Hold Operations">Hold Operations</option>
+                <option value="Hold Training">Hold Training</option>
+                <option value="Safety Time Out">Safety Time Out</option>
+                <option value="Normal Operations (No Hold)">Normal Operations (No Hold)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="opsDutyImpact">Impact to Ops Duty</label>
+            <select id="opsDutyImpact" onchange="toggleWaiverInput()">
+                <option value="NO">NO</option>
+                <option value="YES">YES</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="waiverGroup" style="display:none;">
+            <label for="waiverDetails">CADOC Waiver Action</label>
+            <input type="text" id="waiverDetails" placeholder="Describe impact & who puts up waiver">
+        </div>
+
+        <div class="form-group full-width">
+            <label for="nextTD">Next Technical Discussion</label>
+            <input type="text" id="nextTD" value="TBC pending technical investigation; timing to be advised by Unit.">
+        </div>
+
+        <div class="form-group">
+            <label for="engineerName">Specialist Engineer Name</label>
+            <input type="text" id="engineerName" placeholder="e.g., CPT John Doe">
+        </div>
+
+        <div class="form-group">
+            <label for="engineerPhone">Specialist Engineer Contact No.</label>
+            <input type="text" id="engineerPhone" placeholder="e.g., +65 9123 4567">
+        </div>
+
+        <div class="form-group">
+            <label for="managerName">System Manager Name</label>
+            <input type="text" id="managerName" placeholder="e.g., MAJ Jane Smith">
+        </div>
+
+        <div class="form-group">
+            <label for="managerPhone">System Manager Contact No.</label>
+            <input type="text" id="managerPhone" placeholder="e.g., +65 9876 5432">
+        </div>
+    </div>
+
+    <label style="margin-top: 15px; display:block;">Formatted Output Preview</label>
+    <div class="output-box" id="outputPreview"></div>
+
+    <div class="btn-container">
+        <button class="btn-primary" onclick="copyToClipboard()">Copy to Clipboard</button>
+        <button class="btn-secondary" onclick="resetForm()">Reset</button>
+    </div>
+</div>
+
+<div id="toast" class="toast">Copied to clipboard!</div>
+
+<script>
+    function setCurrentTime() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('timeConcluded').value = hours + minutes + ' Hours';
+    }
+
+    function toggleWaiverInput() {
+        const impact = document.getElementById('opsDutyImpact').value;
+        const waiverGroup = document.getElementById('waiverGroup');
+        if (impact === 'YES') {
+            waiverGroup.style.display = 'flex';
+        } else {
+            waiverGroup.style.display = 'none';
+        }
+        generateMessage();
+    }
+
+    function toggleFleetInput() {
+        const fleetImp = document.getElementById('fleetImp').value;
+        const fleetDetailsGroup = document.getElementById('fleetDetailsGroup');
+        if (fleetImp === 'YES (Specific Tail/Variant)') {
+            fleetDetailsGroup.style.display = 'flex';
+        } else {
+            fleetDetailsGroup.style.display = 'none';
+        }
+        generateMessage();
+    }
+
+    function generateMessage() {
+        const title = document.getElementById('incidentTitle').value || '<Insert Title>';
+        const time = document.getElementById('timeConcluded').value || 'HHMM Hours';
+        const subsystem = document.getElementById('subsystem').value || 'Under Assessment';
+        const safetyImp = document.getElementById('safetyImp').value;
+        const fleetImp = document.getElementById('fleetImp').value;
+        const fleetDetails = document.getElementById('fleetDetails').value;
+        const opsStatus = document.getElementById('opsStatus').value;
+        const opsDutyImpact = document.getElementById('opsDutyImpact').value;
+        const waiverDetails = document.getElementById('waiverDetails').value;
+        const nextTD = document.getElementById('nextTD').value || 'TBC';
+        
+        const engName = document.getElementById('engineerName').value || 'TBC';
+        const engPhone = document.getElementById('engineerPhone').value || 'TBC';
+        const mgrName = document.getElementById('managerName').value || 'TBC';
+        const mgrPhone = document.getElementById('managerPhone').value || 'TBC';
+
+        let fleetImpText = fleetImp;
+        if (fleetImp === 'YES (Specific Tail/Variant)' && fleetDetails) {
+            fleetImpText += ` - ${fleetDetails}`;
+        }
+
+        let opsDutyText = opsDutyImpact;
+        if (opsDutyImpact === 'YES' && waiverDetails) {
+            opsDutyText += ` - ${waiverDetails}`;
+        }
+
+        const message = 
+`[FLASH UPDATE] POST-TECHNICAL DISCUSSION
+Incident: ${title}
+Discussion Concluded: ${time}
+
+1. IMPLICATED SYSTEM/SUBSYSTEM
+- ${subsystem}
+
+2. FLEET & SAFETY STATUS
+- Safety Implication: ${safetyImp}
+- Fleet Implication: ${fleetImpText}
+
+3. OPERATIONAL POSTURE
+- ${opsStatus}
+
+4. IMPACT TO OPS DUTY
+- ${opsDutyText}
+
+5. NEXT TECHNICAL DISCUSSION
+- ${nextTD}
+
+6. CONTACTS FOR FOLLOW-UP
+- Specialist Engineer: ${engName} (${engPhone})
+- System Manager: ${mgrName} (${mgrPhone})`;
+
+        document.getElementById('outputPreview').textContent = message;
+        return message;
+    }
+
+    function copyToClipboard() {
+        const text = generateMessage();
+        navigator.clipboard.writeText(text).then(() => {
+            showToast();
+        });
+    }
+
+    function showToast() {
+        const toast = document.getElementById("toast");
+        toast.className = "toast show";
+        setTimeout(() => { toast.className = toast.className.replace("toast show", "toast"); }, 3000);
+    }
+
+    function resetForm() {
+        document.querySelectorAll('input').forEach(i => i.value = '');
+        document.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+        document.getElementById('nextTD').value = 'TBC pending technical investigation; timing to be advised by Unit.';
+        setCurrentTime();
+        toggleWaiverInput();
+        toggleFleetInput();
+    }
+
+    document.querySelectorAll('input, select').forEach(element => {
+        element.addEventListener('input', generateMessage);
+    });
+
+    window.onload = () => {
+        setCurrentTime();
+        generateMessage();
+    };
+</script>
+
+</body>
+</html>
